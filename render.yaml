@@ -1,5 +1,4 @@
 services:
-  # The Backend Service
   - type: web
     name: zync-server
     env: node
@@ -9,7 +8,4 @@ services:
     plan: free
     envVars:
       - key: PORT
-        value: 10000
-
-  # The Frontend Static Site (Optional, usually better on Vercel, but Render can do it too)
-  # keeping standalone to suggest Vercel for client as per README, but defining server here.
+        value: "10000"
