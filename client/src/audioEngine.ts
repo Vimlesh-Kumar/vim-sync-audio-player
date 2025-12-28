@@ -133,6 +133,15 @@ export class AudioEngine {
         this.source.start(this.ctx.currentTime + delay, offset);
     }
 
+    setVolume(value: number) {
+        // value should be 0 to 1
+        const vol = Math.max(0, Math.min(1, value));
+        this.gainNode.gain.setTargetAtTime(vol, this.ctx.currentTime, 0.05);
+        if (this.audioTag) {
+            this.audioTag.volume = vol;
+        }
+    }
+
     stop() {
         if (this.audioTag) {
             this.audioTag.pause();

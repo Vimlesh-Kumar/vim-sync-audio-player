@@ -25,18 +25,55 @@ let playbackState = {
   elapsed: 0 // Track how much time has successfully played to handle syncing resumes
 };
 
+const clients = new Map();
+
 io.on('connection', (socket) => {
   console.log('Client connected', socket.id);
+
+  // Initialize client entry
+  clients.set(socket.id, {
+    id: socket.id,
+    name: 'Unknown Device',
+    isHost: false,
+    volume: 1,
+    status: 'Idle',
+    latency: 0
+  });
+
+  // Function to broadcast updated client list to hosts
+  const broadcastClientsToHosts = () => {
+    const clientList = Array.from(clients.values());
+    io.emit('clients_update', clientList);
+  };
 
   // Send current state
   socket.emit('playback_state', playbackState);
   if (currentAudioName) {
     socket.emit('audio_available', { name: currentAudioName, type: currentAudioType });
   }
+  broadcastClientsToHosts();
+
+  // Handle identity update
+  socket.on('update_identity', (data) => {
+    const client = clients.get(socket.id);
+    if (client) {
+      Object.assign(client, data);
+      broadcastClientsToHosts();
+    }
+  });
 
   // Time Sync
   socket.on('timesync', (clientSendTime, cb) => {
-    cb(Date.now(), clientSendTime);
+    const serverTime = Date.now();
+    cb(serverTime, clientSendTime);
+
+    // Briefly update latency info for host view
+    const client = clients.get(socket.id);
+    if (client) {
+      // clientSendTime is when they sent it, serverTime is when we got it. 
+      // This is a rough estimate but good for UI
+      client.latency = serverTime - clientSendTime;
+    }
   });
 
   // Host uploads audio
@@ -54,36 +91,48 @@ io.on('connection', (socket) => {
 
   // Client requests audio data
   socket.on('request_audio', (cb) => {
+    const client = clients.get(socket.id);
+    if (client) {
+      client.status = 'Downloading';
+      broadcastClientsToHosts();
+    }
+
     if (currentAudioBuffer) {
       cb({ buffer: currentAudioBuffer, type: currentAudioType, name: currentAudioName });
+      if (client) {
+        client.status = 'Ready';
+        broadcastClientsToHosts();
+      }
     } else {
       cb(null);
     }
   });
 
-  // Play: Host specifies a delay
+  // Play
   socket.on('play', (delay = 2000) => {
-    // If we have an accumulated elapsed time (from pausing), we shift the start time back
-    // so that (Now + Delay) - StartTime = Elapsed.
-    // => StartTime = (Now + Delay) - Elapsed
-
     const now = Date.now();
     const startAt = (now + delay) - playbackState.elapsed;
 
     playbackState.isPlaying = true;
     playbackState.startTime = startAt;
 
-    console.log(`Starting playback. Server Time: ${now}, Scheduled Start: ${startAt}, resuming from: ${playbackState.elapsed}ms`);
+    console.log(`Starting playback. Host: ${socket.id}`);
+
+    // Update all client statuses
+    clients.forEach(c => { if (c.status === 'Ready') c.status = 'Playing'; });
+    broadcastClientsToHosts();
+
     io.emit('play', playbackState);
   });
 
   socket.on('pause', () => {
     if (playbackState.isPlaying) {
       const now = Date.now();
-      // Calculate how much we played since the "startTime"
-      // CurrentPosition = Now - StartTime
       playbackState.elapsed = now - playbackState.startTime;
       playbackState.isPlaying = false;
+
+      clients.forEach(c => { if (c.status === 'Playing') c.status = 'Ready'; });
+      broadcastClientsToHosts();
 
       console.log(`Paused at elapsed: ${playbackState.elapsed}ms`);
       io.emit('pause');
@@ -91,18 +140,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on('seek', (seekTimeMs) => {
-    // SeekTimeMs is the position in the track (e.g. 30000ms for 30s)
-
     const now = Date.now();
     playbackState.elapsed = seekTimeMs;
 
     if (playbackState.isPlaying) {
-      // If currently playing, we shift the start time so the math works out:
-      // CurrentTime = Now - StartTime  =>  SeekTime = Now - StartTime  => StartTime = Now - SeekTime
       playbackState.startTime = now - seekTimeMs;
     } else {
-      // If paused, we just update the elapsed time so when we hit play, it resumes from here.
-      playbackState.startTime = 0; // Not relevant while paused
+      playbackState.startTime = 0;
     }
 
     console.log(`Seeking to: ${seekTimeMs}ms.`);
@@ -113,7 +157,23 @@ io.on('connection', (socket) => {
     playbackState.isPlaying = false;
     playbackState.startTime = 0;
     playbackState.elapsed = 0;
+
+    clients.forEach(c => c.status = 'Ready');
+    broadcastClientsToHosts();
+
     io.emit('stop');
+  });
+
+  // Remote Control: Host to Client
+  socket.on('control_device', ({ targetId, action, value }) => {
+    // Basic security: In a real app we'd verify 'socket.id' is indeed a host
+    io.to(targetId).emit('remote_control', { action, value });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected', socket.id);
+    clients.delete(socket.id);
+    broadcastClientsToHosts();
   });
 });
 
