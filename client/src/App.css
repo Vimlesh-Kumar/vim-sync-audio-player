@@ -1,0 +1,377 @@
+:root {
+  --bg-dark: #000000;
+  --vlc-orange: #FF8800;
+  --vlc-orange-hover: #E67A00;
+  --card-bg: #1C1C1E;
+  --text-primary: #FFFFFF;
+  --text-secondary: #8E8E93;
+  --accent-blue: #0A84FF;
+  --danger: #FF453A;
+  --success: #32D74B;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  position: relative;
+}
+
+header {
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+h1 {
+  font-size: 1.2rem;
+  margin: 0;
+  font-weight: 600;
+  color: var(--vlc-orange);
+}
+
+.status-bar {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pill {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pill.green {
+  color: var(--success);
+}
+
+.pill.red {
+  color: var(--danger);
+}
+
+.pill.blue {
+  color: var(--accent-blue);
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  overflow-y: auto;
+  position: relative;
+}
+
+.host-toggle-wrapper {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.host-toggle-btn {
+  background: var(--card-bg);
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s;
+}
+
+.host-toggle-btn.active {
+  border-color: var(--vlc-orange);
+  color: var(--vlc-orange);
+}
+
+.host-toggle-btn input {
+  display: none;
+}
+
+.player-core {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.album-art-wrap {
+  width: 240px;
+  height: 240px;
+  background: var(--card-bg);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.album-art-wrap .icon-pulse {
+  color: var(--vlc-orange);
+  animation: vlc-pulse 2s infinite ease-in-out;
+}
+
+@keyframes vlc-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+}
+
+.track-info {
+  text-align: center;
+  width: 100%;
+}
+
+.track-title {
+  font-size: 1.4rem;
+  margin: 0;
+  font-weight: 700;
+  color: #fff;
+}
+
+.track-status {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  min-height: 1.2rem;
+}
+
+.vlc-visualizer {
+  display: flex;
+  gap: 4px;
+  height: 20px;
+  align-items: flex-end;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.vlc-bar {
+  width: 4px;
+  background: var(--vlc-orange);
+  height: 4px;
+  border-radius: 2px;
+}
+
+.vlc-bar.anim {
+  animation: vlc-viz 0.8s infinite ease-in-out;
+}
+
+.vlc-bar:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.vlc-bar:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.vlc-bar:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+.vlc-bar:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+@keyframes vlc-viz {
+
+  0%,
+  100% {
+    height: 4px;
+  }
+
+  50% {
+    height: 20px;
+  }
+}
+
+.progress-section {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.time-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  margin-top: 8px;
+}
+
+.vlc-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+}
+
+.vlc-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--vlc-orange);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.vlc-slider:disabled {
+  opacity: 0.5;
+}
+
+.bottom-controls {
+  padding: 1rem;
+  padding-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: linear-gradient(to top, #000, transparent);
+}
+
+.playback-btns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.p-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s;
+}
+
+.p-btn:active {
+  transform: scale(0.9);
+}
+
+.p-btn:disabled {
+  opacity: 0.3;
+}
+
+.p-btn.play-pause {
+  background: var(--vlc-orange);
+  border-radius: 50%;
+  padding: 1.2rem;
+  box-shadow: 0 4px 15px rgba(255, 136, 0, 0.4);
+}
+
+.host-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.upload-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  padding: 0.8rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.overlay-vlc {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-dark);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.overlay-vlc h2 {
+  color: var(--vlc-orange);
+  margin-bottom: 1rem;
+}
+
+.vlc-btn-large {
+  background: var(--vlc-orange);
+  color: #fff;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-top: 2rem;
+  cursor: pointer;
+}
+
+.vlc-btn-small {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+footer {
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
